@@ -1,10 +1,12 @@
 package com.ottomanbank.accountservice.service;
 
 import com.ottomanbank.accountservice.dto.AccountResponse;
+import com.ottomanbank.accountservice.dto.BalanceUpdateRequest;
 import com.ottomanbank.accountservice.dto.CreateAccountRequest;
 import com.ottomanbank.accountservice.entity.Account;
 import com.ottomanbank.accountservice.exception.AccountAlreadyExistsException;
 import com.ottomanbank.accountservice.exception.AccountNotFoundException;
+import com.ottomanbank.accountservice.exception.InsufficientBalanceException;
 import com.ottomanbank.accountservice.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,31 @@ public class AccountService {
         Account account = accountRepository.findByOwnerEmail(ownerEmail)
                 .orElseThrow(() -> new AccountNotFoundException("No account found for: " + ownerEmail));
         return toResponse(account);
+    }
+
+    public AccountResponse getByAccountNumber(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("No account found with number: " + accountNumber));
+        return toResponse(account);
+    }
+
+    public AccountResponse updateBalance(String accountNumber, BalanceUpdateRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("No account found with number: " + accountNumber));
+
+        if ("DEBIT".equalsIgnoreCase(request.getOperation())) {
+            if (account.getBalance().compareTo(request.getAmount()) < 0) {
+                throw new InsufficientBalanceException("Insufficient balance in account: " + accountNumber);
+            }
+            account.setBalance(account.getBalance().subtract(request.getAmount()));
+        } else if ("CREDIT".equalsIgnoreCase(request.getOperation())) {
+            account.setBalance(account.getBalance().add(request.getAmount()));
+        } else {
+            throw new IllegalArgumentException("Invalid operation: must be CREDIT or DEBIT");
+        }
+
+        Account saved = accountRepository.save(account);
+        return toResponse(saved);
     }
 
     private String generateAccountNumber() {

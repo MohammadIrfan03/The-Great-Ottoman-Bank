@@ -1,6 +1,7 @@
 package com.ottomanbank.accountservice.controller;
 
 import com.ottomanbank.accountservice.dto.AccountResponse;
+import com.ottomanbank.accountservice.dto.BalanceUpdateRequest;
 import com.ottomanbank.accountservice.dto.CreateAccountRequest;
 import com.ottomanbank.accountservice.service.AccountService;
 import jakarta.validation.Valid;
@@ -36,5 +37,17 @@ public class AccountController {
         String email = authentication.getName();
         AccountResponse response = accountService.getMyAccount(email);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<AccountResponse> getByAccountNumber(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(accountService.getByAccountNumber(accountNumber));
+    }
+
+    @PutMapping("/{accountNumber}/balance")
+    public ResponseEntity<AccountResponse> updateBalance(
+            @PathVariable String accountNumber,
+            @Valid @RequestBody BalanceUpdateRequest request) {
+        return ResponseEntity.ok(accountService.updateBalance(accountNumber, request));
     }
 }
