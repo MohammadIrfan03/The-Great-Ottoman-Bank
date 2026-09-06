@@ -1,5 +1,6 @@
 package com.ottomanbank.authservice.security;
 
+import com.ottomanbank.authservice.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * The Great Ottoman Bank - Security Configuration
+ *
+ * Configures stateless JWT-based authentication. Registration and login
+ * endpoints are public (permitAll); every other endpoint requires a
+ * valid JWT issued by this service.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
