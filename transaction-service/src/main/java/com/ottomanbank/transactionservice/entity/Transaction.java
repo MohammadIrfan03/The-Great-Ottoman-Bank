@@ -33,7 +33,7 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionType type;
 
-    @Column(nullable = false)
+    @Column
     private String fromAccount; // null for pure DEPOSIT
 
     @Column
