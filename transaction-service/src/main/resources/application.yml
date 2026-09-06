@@ -4,8 +4,8 @@ server:
 spring:
   application:
     name: transaction-service
-  config:
-    import: optional:configserver:http://localhost:8888
+ # config:
+   # import: optional:configserver:http://localhost:8888
   datasource:
     url: jdbc:mysql://localhost:3306/transaction_db?createDatabaseIfNotExist=true
     username: ottoman_user
