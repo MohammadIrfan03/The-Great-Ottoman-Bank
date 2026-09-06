@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/auth_db?createDatabaseIfNotExist=true
     username: ottoman_user
-    password: "OttomanBank@2026"
+    password: 'OttomanBank@2026'
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
