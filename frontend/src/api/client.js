@@ -1,7 +1,9 @@
 import axios from 'axios'
 
-// All requests go through the API gateway (single entry point, port 8080).
-const BASE_URL = 'http://localhost:8080'
+// Build the gateway URL from whatever host the frontend is currently
+// being served from - works on localhost, any EC2 IP, or a real domain,
+// without ever needing to hardcode an IP.
+const BASE_URL = `http://${window.location.hostname}:8080`
 
 const client = axios.create({
   baseURL: BASE_URL,
