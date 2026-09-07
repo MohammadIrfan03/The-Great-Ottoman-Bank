@@ -1,0 +1,44 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: audit-service
+  config:
+    import: optional:configserver:http://localhost:8888
+  datasource:
+    url: jdbc:mysql://localhost:3306/audit_db?createDatabaseIfNotExist=true
+    username: ottoman_user
+    password: 'OttomanBank@2026'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: audit-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ottomanbank.auditservice.dto,com.ottomanbank.transactionservice.dto"
+        spring.json.value.default.type: com.ottomanbank.auditservice.dto.TransactionEvent
+        spring.json.use.type.headers: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
