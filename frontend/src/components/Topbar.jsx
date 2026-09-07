@@ -1,64 +1,54 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import Seal from './Seal'
 
 export default function Topbar({ title }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const initials = user?.fullName
-    ? user.fullName.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
+    ? user.fullName
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
     : '?'
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
   return (
-    <div
-      style={{
-        height: 64,
-        flexShrink: 0,
-        background: 'var(--parchment)',
-        borderBottom: '1px solid rgba(58,46,34,0.12)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 28px',
-      }}
-    >
-      <h2 style={{ fontSize: 19, fontWeight: 600, color: 'var(--ink)' }}>{title}</h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+    <header className="topbar">
+      <div className="topbar-title-wrap">
         <button
-          onClick={handleLogout}
-          style={{
-            background: 'none',
-            border: '1px solid rgba(58,46,34,0.2)',
-            padding: '7px 14px',
-            fontSize: 12.5,
-            color: 'var(--ink)',
-          }}
+          className="mobile-brand"
+          onClick={() => navigate('/dashboard')}
+          aria-label="Go to dashboard"
         >
-          Sign out
+          <Seal size={38} />
         </button>
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: '50%',
-            background: 'var(--burgundy)',
-            color: 'var(--parchment)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 13,
-            fontWeight: 600,
-            fontFamily: "'Cormorant Garamond', serif",
-          }}
-        >
-          {initials}
+        <div>
+          <div className="topbar-kicker">THE GREAT OTTOMAN BANK</div>
+          <h2>{title}</h2>
         </div>
       </div>
-    </div>
+
+      <div className="topbar-user">
+        <div className="topbar-user-copy">
+          <strong>{user?.fullName || 'Account holder'}</strong>
+          <span>{user?.email || ''}</span>
+        </div>
+        <div className="avatar" aria-label="User profile">
+          {initials}
+        </div>
+        <button className="signout-btn" onClick={handleLogout}>
+          Sign out
+        </button>
+      </div>
+    </header>
   )
 }

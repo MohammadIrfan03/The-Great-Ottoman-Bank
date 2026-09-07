@@ -1,25 +1,34 @@
-// Ottoman-inspired seal mark: a roundel containing a crescent moon and
-// star, styled after an imperial tughra's circular counterpart rather
-// than a literal flag icon.
-export default function Seal({ size = 64 }) {
+export default function Seal({ size = 64, className = '' }) {
   return (
     <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        border: '2px solid var(--gold)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'radial-gradient(circle at 35% 30%, #2a1f18, var(--espresso) 70%)',
-        flexShrink: 0,
-      }}
+      className={`seal ${className}`}
+      style={{ width: size, height: size }}
+      aria-label="Ottoman Bank emblem"
     >
-      <svg viewBox="0 0 24 24" width={size * 0.55} height={size * 0.55} fill="none" stroke="#C9A24B" strokeWidth="1.3">
-        <circle cx="12" cy="12" r="9.5" />
-        <path d="M14.5 6.5a6 6 0 100 11 7.2 7.2 0 010-11z" fill="#C9A24B" stroke="none" opacity="0.9" />
-        <path d="M17.3 10.6l.55 1.15 1.25.15-.92.87.24 1.25-1.12-.62-1.12.62.24-1.25-.92-.87 1.25-.15z" fill="#C9A24B" stroke="none" />
+      <svg viewBox="0 0 100 100" width="78%" height="78%" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="2" />
+        <circle cx="50" cy="50" r="39" stroke="currentColor" strokeWidth="1" opacity=".45" />
+        <path
+          d="M58 25c-11 3-19 13-19 25s8 22 19 25c-5-6-8-14-8-25s3-19 8-25Z"
+          fill="currentColor"
+          opacity=".92"
+        />
+        <path
+          d="M68 38l2.8 5.8 6.4.8-4.7 4.5 1.2 6.4-5.7-3.2-5.7 3.2 1.2-6.4-4.7-4.5 6.4-.8L68 38Z"
+          fill="currentColor"
+        />
+        <path
+          d="M23 66c8 5 17 8 27 8s19-3 27-8"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          opacity=".55"
+        />
+        <path
+          d="M31 27c5-3 12-5 19-5s14 2 19 5"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          opacity=".55"
+        />
       </svg>
     </div>
   )

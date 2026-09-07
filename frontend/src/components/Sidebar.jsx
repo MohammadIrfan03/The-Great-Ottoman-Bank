@@ -1,83 +1,48 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import Seal from './Seal'
+import { useAuth } from '../context/AuthContext'
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/accounts', label: 'Accounts' },
-  { to: '/transfer', label: 'Transfer Funds' },
-  { to: '/history', label: 'Transaction History' },
+const items = [
+  { to: '/dashboard', label: 'Dashboard', icon: '⌂' },
+  { to: '/accounts', label: 'Accounts', icon: '▣' },
+  { to: '/transfer', label: 'Transfer Funds', icon: '↗' },
+  { to: '/history', label: 'Transaction History', icon: '≡' },
 ]
 
 export default function Sidebar() {
   const { user } = useAuth()
 
   return (
-    <aside
-      className="sidebar"
-      style={{
-        width: 236,
-        flexShrink: 0,
-        background: 'var(--espresso)',
-        color: 'var(--gold-soft)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '22px 0',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '0 20px 22px',
-          borderBottom: '1px solid rgba(201,162,75,0.2)',
-          marginBottom: 14,
-        }}
-      >
-        <Seal size={40} />
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", lineHeight: 1.15 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--parchment)' }}>Ottoman Bank</div>
-          <div style={{ fontSize: 10.5, letterSpacing: '0.06em', color: 'var(--gold)', opacity: 0.85 }}>
-            SANCAK ONLINE
-          </div>
-        </div>
-      </div>
+    <aside className="sidebar">
+      <NavLink to="/dashboard" className="sidebar-brand">
+        <Seal size={62} />
+        <span className="sidebar-brand-name">THE GREAT<br />OTTOMAN BANK</span>
+        <span className="sidebar-brand-sub">TRADITION • TRUST • PROSPERITY</span>
+      </NavLink>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
-        {navItems.map((item) => (
+      <div className="sidebar-rule" />
+
+      <nav className="sidebar-nav" aria-label="Primary navigation">
+        {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              padding: '10px 12px',
-              fontSize: 13.5,
-              fontWeight: 500,
-              color: isActive ? 'var(--parchment)' : '#C9BBA1',
-              textDecoration: 'none',
-              borderLeft: isActive ? '2px solid var(--gold)' : '2px solid transparent',
-              background: isActive ? 'rgba(201,162,75,0.12)' : 'transparent',
-            })}
+            className={({ isActive }) =>
+              `sidebar-link${isActive ? ' active' : ''}`
+            }
           >
-            {item.label}
+            <span className="sidebar-icon">{item.icon}</span>
+            <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      <div
-        style={{
-          marginTop: 'auto',
-          padding: '16px 20px 0',
-          borderTop: '1px solid rgba(201,162,75,0.15)',
-          fontSize: 11.5,
-          color: '#8a7d68',
-        }}
-      >
-        Logged in as
-        <br />
-        <strong style={{ color: '#C9BBA1' }}>{user?.fullName}</strong>
+      <div className="sidebar-bottom">
+        <div className="sidebar-legacy">A LEGACY OF TRUST SINCE 1856</div>
+        <div className="sidebar-user">
+          <span className="sidebar-user-name">{user?.fullName}</span>
+          <span className="sidebar-user-role">{user?.role || 'CUSTOMER'}</span>
+        </div>
       </div>
     </aside>
   )

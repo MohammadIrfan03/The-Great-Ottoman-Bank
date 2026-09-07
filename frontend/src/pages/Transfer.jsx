@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import client from '../api/client'
-import Topbar from '../components/Topbar'
+import AppShell from '../components/AppShell'
+
+const modes = ['transfer', 'deposit', 'withdraw']
 
 export default function Transfer() {
-  const [mode, setMode] = useState('transfer') // transfer | deposit | withdraw
+  const [mode, setMode] = useState('transfer')
   const [fromAccountNumber, setFromAccountNumber] = useState('')
   const [toAccountNumber, setToAccountNumber] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
@@ -12,31 +14,48 @@ export default function Transfer() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const switchMode = (nextMode) => {
+    setMode(nextMode)
+    setResult(null)
+    setError('')
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setError('')
     setResult(null)
+
+    const numericAmount = Number(amount)
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      setError('Enter a valid amount greater than zero.')
+      return
+    }
+
     setLoading(true)
+
     try {
-      let res
+      let response
+
       if (mode === 'transfer') {
-        res = await client.post('/api/transactions/transfer', {
-          fromAccountNumber,
-          toAccountNumber,
-          amount: Number(amount),
+        response = await client.post('/api/transactions/transfer', {
+          fromAccountNumber: fromAccountNumber.trim(),
+          toAccountNumber: toAccountNumber.trim(),
+          amount: numericAmount,
         })
       } else if (mode === 'deposit') {
-        res = await client.post('/api/transactions/deposit', {
-          accountNumber,
-          amount: Number(amount),
+        response = await client.post('/api/transactions/deposit', {
+          accountNumber: accountNumber.trim(),
+          amount: numericAmount,
         })
       } else {
-        res = await client.post('/api/transactions/withdraw', {
-          accountNumber,
-          amount: Number(amount),
+        response = await client.post('/api/transactions/withdraw', {
+          accountNumber: accountNumber.trim(),
+          amount: numericAmount,
         })
       }
-      setResult(res.data)
+
+      setResult(response.data)
+      setAmount('')
     } catch (err) {
       setError(err.response?.data?.message || 'Transaction failed')
     } finally {
@@ -45,69 +64,99 @@ export default function Transfer() {
   }
 
   return (
-    <>
-      <Topbar title="Transfer Funds" />
-      <div className="content">
-        <div className="card" style={{ maxWidth: 480 }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            {['transfer', 'deposit', 'withdraw'].map((m) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setResult(null); setError('') }}
-                style={{
-                  flex: 1,
-                  padding: '9px 0',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  border: '1px solid var(--line)',
-                  background: mode === m ? 'var(--burgundy)' : '#fff',
-                  color: mode === m ? 'var(--parchment)' : 'var(--ink)',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {m}
-              </button>
-            ))}
+    <AppShell title="Transfer Funds">
+      <section className="card transaction-card">
+        <div className="section-title transaction-heading">
+          <div>
+            <span className="section-kicker">SECURE TRANSACTION</span>
+            <h3>Move Money</h3>
           </div>
+        </div>
 
-          {error && <div className="form-error">{error}</div>}
+        <div className="transaction-tabs">
+          {modes.map((item) => (
+            <button
+              key={item}
+              className={mode === item ? 'active' : ''}
+              onClick={() => switchMode(item)}
+              type="button"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
 
-          {result && (
-            <div style={{ background: 'rgba(63,107,63,0.08)', border: '1px solid rgba(63,107,63,0.3)', padding: 12, fontSize: 13, marginBottom: 18 }}>
-              Success — Ref: {result.referenceNumber}, Status: {result.status}
+        {error && <div className="form-error">{error}</div>}
+
+        {result && (
+          <div className="success-panel">
+            <span className="success-mark">✓</span>
+            <div>
+              <strong>Transaction successful</strong>
+              <p>Reference: {result.referenceNumber} · Status: {result.status}</p>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="transaction-form">
+          {mode === 'transfer' ? (
+            <>
+              <div className="field">
+                <label htmlFor="fromAccount">From account</label>
+                <input
+                  id="fromAccount"
+                  value={fromAccountNumber}
+                  onChange={(e) => setFromAccountNumber(e.target.value)}
+                  placeholder="OB..."
+                  required
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="toAccount">To account</label>
+                <input
+                  id="toAccount"
+                  value={toAccountNumber}
+                  onChange={(e) => setToAccountNumber(e.target.value)}
+                  placeholder="OB..."
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <div className="field">
+              <label htmlFor="accountNumber">Account number</label>
+              <input
+                id="accountNumber"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="OB..."
+                required
+              />
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            {mode === 'transfer' ? (
-              <>
-                <div className="field">
-                  <label>From account</label>
-                  <input value={fromAccountNumber} onChange={(e) => setFromAccountNumber(e.target.value)} placeholder="OB..." required />
-                </div>
-                <div className="field">
-                  <label>To account</label>
-                  <input value={toAccountNumber} onChange={(e) => setToAccountNumber(e.target.value)} placeholder="OB..." required />
-                </div>
-              </>
-            ) : (
-              <div className="field">
-                <label>Account number</label>
-                <input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="OB..." required />
-              </div>
-            )}
-
-            <div className="field">
-              <label>Amount</label>
-              <input type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" required />
+          <div className="field">
+            <label htmlFor="amount">Amount</label>
+            <div className="amount-input">
+              <span>₹</span>
+              <input
+                id="amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                required
+              />
             </div>
+          </div>
 
-            <button className="btn-primary" type="submit" disabled={loading}>
-              {loading ? 'Processing…' : `Confirm ${mode}`}
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
+          <button className="heritage-action full" type="submit" disabled={loading}>
+            {loading ? 'Processing…' : `Confirm ${mode} →`}
+          </button>
+        </form>
+      </section>
+    </AppShell>
   )
 }
