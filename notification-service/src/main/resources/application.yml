@@ -26,7 +26,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.ottomanbank.notificationservice.dto"
+        spring.json.trusted.packages: "com.ottomanbank.notificationservice.dto,com.ottomanbank.transactionservice.dto"
+        spring.json.value.default.type: com.ottomanbank.notificationservice.dto.TransactionEvent
+        spring.json.use.type.headers: false
 
 eureka:
   client:
