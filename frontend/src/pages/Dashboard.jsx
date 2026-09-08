@@ -1,92 +1,147 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import client from '../api/client'
-import Topbar from '../components/Topbar'
+import AppShell from '../components/AppShell'
 
 export default function Dashboard() {
   const [account, setAccount] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
+    let mounted = true
+
     const load = async () => {
       try {
         const accRes = await client.get('/api/accounts/me')
+
+        if (!mounted) return
         setAccount(accRes.data)
+
         try {
-          const txnRes = await client.get(`/api/transactions/history/${accRes.data.accountNumber}`)
-          setTransactions(txnRes.data.slice(0, 5))
+          const txnRes = await client.get(
+            `/api/transactions/history/${accRes.data.accountNumber}`,
+          )
+          if (mounted) {
+            setTransactions(Array.isArray(txnRes.data) ? txnRes.data.slice(0, 5) : [])
+          }
         } catch {
-          setTransactions([])
+          if (mounted) setTransactions([])
         }
       } catch (err) {
-        if (err.response?.status === 404) setNotice('You do not have an account yet.')
+        if (!mounted) return
+
+        if (err.response?.status === 404) {
+          setNotice('You do not have an account yet.')
+        } else {
+          setError(err.response?.data?.message || 'Could not load your banking dashboard.')
+        }
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
+
     load()
+    return () => { mounted = false }
   }, [])
 
   return (
-    <>
-      <Topbar title="Dashboard" />
-      <div className="content">
-        {loading && <p>Loading…</p>}
+    <AppShell title="Dashboard">
+      {loading && <div className="loading-state">Loading your banking details…</div>}
+      {error && <div className="form-error">{error}</div>}
 
-        {!loading && notice && (
-          <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-            <p style={{ marginBottom: 16 }}>{notice}</p>
-            <Link to="/accounts" className="btn-primary" style={{ display: 'inline-block', width: 'auto', padding: '10px 20px', textDecoration: 'none' }}>
-              Open an account
-            </Link>
-          </div>
-        )}
+      {!loading && notice && (
+        <div className="empty-state card">
+          <span className="empty-seal">◆</span>
+          <h3>{notice}</h3>
+          <p>Open your first Ottoman Bank account to begin banking.</p>
+          <Link to="/accounts" className="heritage-action">Open an account →</Link>
+        </div>
+      )}
 
-        {!loading && account && (
-          <>
-            <div className="card balance-card" style={{ marginBottom: 24 }}>
-              <div className="balance-label">TOTAL BALANCE · {account.accountType}</div>
-              <div className="balance-amount financial-number">
-                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(account.balance)}
+      {!loading && account && (
+        <>
+          <section className="dashboard-hero">
+            <div>
+              <span className="eyebrow">TOTAL BALANCE · {account.accountType}</span>
+              <div className="balance-amount">
+                {new Intl.NumberFormat('en-IN', {
+                  style: 'currency',
+                  currency: 'INR',
+                }).format(Number(account.balance || 0))}
               </div>
-              <div className="balance-sub">Account <span className="financial-number">{account.accountNumber}</span></div>
+              <div className="balance-sub">Account {account.accountNumber}</div>
+            </div>
+            <div className="dashboard-emblem">
+              <span>1856</span>
+              <small>EST.</small>
+            </div>
+          </section>
+
+          <section className="quick-actions">
+            <Link to="/transfer" className="quick-card">
+              <span>↗</span>
+              <div><strong>Transfer funds</strong><small>Send money securely</small></div>
+            </Link>
+            <Link to="/accounts" className="quick-card">
+              <span>▣</span>
+              <div><strong>Account details</strong><small>View your account</small></div>
+            </Link>
+            <Link to="/history" className="quick-card">
+              <span>≡</span>
+              <div><strong>Full history</strong><small>Review transactions</small></div>
+            </Link>
+          </section>
+
+          <section className="card table-card">
+            <div className="section-title">
+              <div>
+                <span className="section-kicker">ACCOUNT LEDGER</span>
+                <h3>Recent Transactions</h3>
+              </div>
+              <Link to="/history" className="text-link">View all →</Link>
             </div>
 
-            <div className="card">
-              <div className="section-title">
-                Recent Transactions
-                <Link to="/history" style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--navy)', textDecoration: 'none' }}>View all</Link>
-              </div>
-              {transactions.length === 0 ? (
-                <p style={{ fontSize: 13.5, opacity: 0.6 }}>No transactions yet.</p>
-              ) : (
+            {transactions.length === 0 ? (
+              <p className="muted">No transactions yet.</p>
+            ) : (
+              <div className="table-scroll">
                 <table>
                   <thead>
-                    <tr><th>Reference</th><th>Type</th><th>Status</th><th style={{ textAlign: 'right' }}>Amount</th></tr>
+                    <tr>
+                      <th>Reference</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th className="right">Amount</th>
+                    </tr>
                   </thead>
                   <tbody>
-                    {transactions.map((t) => {
-                      const isCredit = t.toAccount === account.accountNumber
+                    {transactions.map((transaction) => {
+                      const isCredit = transaction.toAccount === account.accountNumber
                       return (
-                        <tr key={t.id}>
-                          <td className="financial-number">{t.referenceNumber}</td>
-                          <td>{t.type}</td>
-                          <td><span className={`badge ${t.status === 'SUCCESS' ? 'success' : 'failed'}`}>{t.status}</span></td>
-                          <td style={{ textAlign: 'right' }} className={`financial-number ${isCredit ? 'amt-credit' : 'amt-debit'}`}>
-                            {isCredit ? '+' : '−'} {t.amount}
+                        <tr key={transaction.id}>
+                          <td className="reference">{transaction.referenceNumber}</td>
+                          <td>{transaction.type}</td>
+                          <td>
+                            <span className={`badge ${transaction.status === 'SUCCESS' ? 'success' : 'failed'}`}>
+                              {transaction.status}
+                            </span>
+                          </td>
+                          <td className={`right amount ${isCredit ? 'credit' : 'debit'}`}>
+                            {isCredit ? '+' : '−'} {transaction.amount}
                           </td>
                         </tr>
                       )
                     })}
                   </tbody>
                 </table>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+    </AppShell>
   )
 }
