@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0" stop-color="#8d6926"/>
+      <stop offset=".5" stop-color="#e0c16b"/>
+      <stop offset="1" stop-color="#9c742b"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" x2="1">
+      <stop offset="0" stop-color="#7a1f2b"/>
+      <stop offset="1" stop-color="#a52a38"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" x2="1">
+      <stop offset="0" stop-color="#174b3a"/>
+      <stop offset="1" stop-color="#2c6a50"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ottoman-inspired heraldic composition; transparent background -->
+  <g stroke="url(#gold)" stroke-width="8" stroke-linejoin="round">
+    <path fill="url(#red)" d="M88 185L35 120l82 27-10-91 58 75 47-99 20 104z"/>
+    <path fill="url(#green)" d="M512 185l53-65-82 27 10-91-58 75-47-99-20 104z"/>
+    <path fill="#173d32" d="M120 320L92 212l94 40 18 112z"/>
+    <path fill="#7a1f2b" d="M480 320l28-108-94 40-18 112z"/>
+    <circle fill="#1c1410" cx="300" cy="125" r="78"/>
+    <circle fill="none" cx="300" cy="125" r="63"/>
+    <path fill="none" d="M270 125a38 38 0 1 0 44-37 35 35 0 1 1-44 37z" stroke-width="11"/>
+    <path fill="url(#gold)" stroke="none" d="M350 91l8 17 19 2-14 13 4 19-17-9-17 9 4-19-14-13 19-2z"/>
+    <path fill="#7a1f2b" d="M300 210L205 290l18 170 77 74 77-74 18-170z"/>
+    <path fill="#173d32" d="M300 220l-62 83 62 54 62-54z"/>
+    <path fill="#c9a24b" d="M276 245h48v120h-48z"/>
+    <path fill="none" d="M110 360L62 510l85-78 23 105 48-121"/>
+    <path fill="none" d="M490 360l48 150-85-78-23 105-48-121"/>
+    <path fill="none" d="M180 455l-64 91m304-91l64 91"/>
+    <path fill="none" d="M218 526l-38 90m202-90l38 90"/>
+    <path fill="none" d="M205 590q95 55 190 0"/>
+    <path fill="none" d="M235 625q65 35 130 0"/>
+    <path fill="none" d="M120 195q-45 25-64 72m424-72q45 25 64 72"/>
+    <path fill="none" d="M156 205l-33 42m321-42l33 42"/>
+    <path fill="none" d="M125 284l-47 62m397-62l47 62"/>
+    <path fill="none" d="M96 390l-47 58m455-58l47 58"/>
+    <path fill="none" d="M300 542v92"/>
+    <path fill="url(#gold)" d="M300 616l-20 34 20 31 20-31z"/>
+  </g>
+
+  <g fill="url(#gold)" font-family="Georgia, serif" text-anchor="middle">
+    <text x="300" y="695" font-size="20" letter-spacing="4">THE GREAT OTTOMAN BANK</text>
+  </g>
+</svg>
