@@ -7,7 +7,7 @@ RUN mvn clean package -DskipTests -B
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-RUN addgroup -S ottoman && adduser -s ottoman -G ottoman
+RUN addgroup -S ottoman && adduser -S ottoman -G ottoman
 COPY --from=build /app/target/*.jar app.jar
 USER ottoman
 EXPOSE 8080
