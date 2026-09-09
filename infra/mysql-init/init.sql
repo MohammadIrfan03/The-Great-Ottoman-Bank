@@ -8,7 +8,7 @@ CREATE DATABASE IF NOT EXISTS transaction_db;
 CREATE DATABASE IF NOT EXISTS notification_db;
 CREATE DATABASE IF NOT EXISTS audit_db;
 
-CREATE USER IF NOT EXISTS 'ottoman_user'@'%' IDENTIFIED WITH mysql_native_password BY 'OttomanBank@2026';
+CREATE USER IF NOT EXISTS 'ottoman_user'@'%' IDENTIFIED BY 'OttomanBank@2026';
 
 GRANT ALL PRIVILEGES ON auth_db.* TO 'ottoman_user'@'%';
 GRANT ALL PRIVILEGES ON account_db.* TO 'ottoman_user'@'%';
