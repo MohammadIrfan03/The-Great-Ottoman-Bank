@@ -1,13 +1,14 @@
+
 server:
-  port: 8084
+  port: 8083
 
 spring:
   application:
-    name: notification-service
+    name: transaction-service
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/notification_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/transaction_db?createDatabaseIfNotExist=true
     username: ottoman_user
     password: 'OttomanBank@2026'
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,23 +20,21 @@ spring:
       hibernate:
         format_sql: true
   kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: notification-service-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.ottomanbank.notificationservice.dto,com.ottomanbank.transactionservice.dto"
-        spring.json.value.default.type: com.ottomanbank.notificationservice.dto.TransactionEvent
-        spring.json.use.type.headers: false
+    bootstrap-servers: ${KAFKA_HOST:localhost}:9092
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
   instance:
     prefer-ip-address: true
+
+jwt:
+  secret: ottoman-bank-super-secret-signing-key-change-this-in-production-min-256-bits
+
+services:
+  account-service:
+    url: http://${ACCOUNT_SERVICE_HOST:localhost}:8082
 
 management:
   endpoints:

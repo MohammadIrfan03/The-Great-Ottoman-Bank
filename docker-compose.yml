@@ -1,0 +1,230 @@
+version: "3.9"
+
+networks:
+  ottoman-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
+services:
+
+  # ==================== INFRASTRUCTURE ====================
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPass@2026
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infra/mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - ottoman-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pRootPass@2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - ottoman-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - ottoman-net
+
+  # ==================== CORE PLATFORM ====================
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    networks:
+      - ottoman-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  config-server:
+    build: ./config-server
+    container_name: config-server
+    restart: unless-stopped
+    environment:
+      EUREKA_HOST: eureka-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - ottoman-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ==================== BUSINESS SERVICES ====================
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - ottoman-net
+
+  account-service:
+    build: ./account-service
+    container_name: account-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    networks:
+      - ottoman-net
+
+  transaction-service:
+    build: ./transaction-service
+    container_name: transaction-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+      KAFKA_HOST: kafka
+      ACCOUNT_SERVICE_HOST: account-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      account-service:
+        condition: service_started
+    networks:
+      - ottoman-net
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+      KAFKA_HOST: kafka
+    depends_on:
+      mysql:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ottoman-net
+
+  audit-service:
+    build: ./audit-service
+    container_name: audit-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+      KAFKA_HOST: kafka
+    depends_on:
+      mysql:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ottoman-net
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    environment:
+      EUREKA_HOST: eureka-server
+      CONFIG_SERVER_HOST: config-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      account-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
+    networks:
+      - ottoman-net
+
+  # ==================== FRONTEND ====================
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - ottoman-net

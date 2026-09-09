@@ -1,3 +1,4 @@
+
 server:
   port: 8083
 
@@ -5,9 +6,9 @@ spring:
   application:
     name: transaction-service
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
   datasource:
-    url: jdbc:mysql://localhost:3306/transaction_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/transaction_db?createDatabaseIfNotExist=true
     username: ottoman_user
     password: 'OttomanBank@2026'
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,12 +20,12 @@ spring:
       hibernate:
         format_sql: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_HOST:localhost}:9092
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
   instance:
     prefer-ip-address: true
 
@@ -33,7 +34,7 @@ jwt:
 
 services:
   account-service:
-    url: http://localhost:8082
+    url: http://${ACCOUNT_SERVICE_HOST:localhost}:8082
 
 management:
   endpoints:
