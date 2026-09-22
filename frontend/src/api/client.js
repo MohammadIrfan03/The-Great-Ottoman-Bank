@@ -2,8 +2,8 @@ import axios from 'axios'
 
 const fallbackBaseUrl =
   typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8080`
-    : 'http://localhost:8080'
+    ? `http://${window.location.hostname}:8089`
+    : 'http://localhost:8089'
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || fallbackBaseUrl).replace(/\/$/, '')
 
