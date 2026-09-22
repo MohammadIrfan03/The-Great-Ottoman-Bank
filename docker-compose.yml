@@ -58,7 +58,7 @@ services:
   # ==================== CORE PLATFORM ====================
 
   eureka-server:
-    build: ./eureka-service
+    image: mohammadirfan123/ottoman-eureka-service:latest
     container_name: eureka-server
     restart: unless-stopped
     ports:
@@ -72,7 +72,7 @@ services:
       retries: 10
 
   config-server:
-    build: ./config-server
+    image: mohammadirfan123/ottoman-config-server:latest
     container_name: config-server
     restart: unless-stopped
     environment:
@@ -93,7 +93,7 @@ services:
   # ==================== BUSINESS SERVICES ====================
 
   auth-service:
-    build: ./auth-service
+    image: mohammadirfan123/ottoman-auth-service:latest
     container_name: auth-service
     restart: unless-stopped
     environment:
@@ -111,7 +111,7 @@ services:
       - ottoman-net
 
   account-service:
-    build: ./account-service
+    image: mohammadirfan123/ottoman-account-service:latest
     container_name: account-service
     restart: unless-stopped
     environment:
@@ -129,7 +129,7 @@ services:
       - ottoman-net
 
   transaction-service:
-    build: ./transaction-service
+    image: mohammadirfan123/ottoman-transaction-service:latest
     container_name: transaction-service
     restart: unless-stopped
     environment:
@@ -153,7 +153,7 @@ services:
       - ottoman-net
 
   notification-service:
-    build: ./notification-service
+    image: mohammadirfan123/ottoman-notification-service:latest
     container_name: notification-service
     restart: unless-stopped
     environment:
@@ -172,7 +172,7 @@ services:
       - ottoman-net
 
   audit-service:
-    build: ./audit-service
+    image: mohammadirfan123/ottoman-audit-service:latest
     container_name: audit-service
     restart: unless-stopped
     environment:
@@ -191,7 +191,7 @@ services:
       - ottoman-net
 
   api-gateway:
-    build: ./api-gateway
+    image: mohammadirfan123/ottoman-api-gateway:latest
     container_name: api-gateway
     restart: unless-stopped
     environment:
@@ -214,8 +214,7 @@ services:
   # ==================== FRONTEND ====================
 
   frontend:
-    build:
-      context: ./frontend
+    image: mohammadirfan123/ottoman-frontend:latest
     container_name: frontend
     restart: unless-stopped
     ports:
