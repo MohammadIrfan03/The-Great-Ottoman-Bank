@@ -14,7 +14,7 @@ services:
     container_name: mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: RootPass@2026
+      MYSQL_ROOT_PASSWORD: ${MYSQL-ROOT_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
