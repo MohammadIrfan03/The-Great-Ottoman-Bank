@@ -46,7 +46,7 @@ eureka:
     prefer-ip-address: true
 
 jwt:
-  secret: ottoman-bank-super-secret-signing-key-change-this-in-production-min-256-bits
+  secret: ${JWT_SECRET}
 
 management:
   endpoints:
