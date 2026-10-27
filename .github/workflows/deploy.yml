@@ -1,0 +1,60 @@
+name: Ottoman Bank CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - eureka-service
+          - config-server
+          - auth-service
+          - account-service
+          - transaction-service
+          - notification-service
+          - audit-service
+          - api-gateway
+          - frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ottoman-${{ matrix.service }}:${{ github.run_number }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ottoman-${{ matrix.service }}:latest
+
+  deploy:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/The-Great-Ottoman-Bank
+            SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ottoman-bank/prod-secrets --query SecretString --output text --region us-west-2)
+            export MYSQL_ROOT_PASSWORD=$(echo "$SECRET_JSON" | jq -r .MYSQL_ROOT_PASSWORD)
+            export DB_PASSWORD=$(echo "$SECRET_JSON" | jq -r .DB_PASSWORD)
+            export JWT_SECRET=$(echo "$SECRET_JSON" | jq -r .JWT_SECRET)
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
